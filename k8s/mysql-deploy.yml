@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: mysql-deploy 
+  labels:
+    app: mysqldb 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqldb 
+  template: 
+    metadata:
+      labels:
+        app: mysqldb 
+    spec:
+      containers: 
+      - name: mysqldb 
+        image: mysql 
+
+        ports:
+        - containerPort: 3306 
+        env:
+        - name: MYSQL_ROOT_PASSWORD 
+          value: root 
+        - name: MYSQL_DATABASE 
+          value: ms2
+
+---
+apiVersion: v1   # Corrected apiVersion for Service
+kind: Service 
+metadata: 
+  name: mysqldb         
+spec: 
+  selector: 
+    app: mysqldb 
+  ports:
+    - port: 3306
+      targetPort: 3306 
+...

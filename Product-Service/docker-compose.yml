@@ -1,0 +1,120 @@
+version: "3.8"
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ms2
+
+    networks:
+       springboot-mysql-net:
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysqldb
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8082:80"
+    depends_on:
+      - mysqldb
+    networks:
+       springboot-mysql-net:
+
+  clientms:
+    image: radhakant/clientms:latest
+    container_name: client
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysqldb
+      - servicems
+      - config-server-ms
+    networks:
+      springboot-mysql-net:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    restart: on-failure
+
+  productms:
+    image: radhakant/productms:latest
+    container_name: product
+
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysqldb
+      - servicems
+
+    networks:
+      springboot-mysql-net:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  servicems:
+    image: radhakant/servicems:latest
+    container_name: service
+
+    ports:
+      - "8761:8761"
+    depends_on:
+      - mysqldb
+      - phpmyadmin
+      - zipkin
+
+    networks:
+      springboot-mysql-net:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+  gatewayms:
+    image: radhakant/gatewayms:latest
+
+    ports:
+      - "9191:9191"
+    depends_on:
+      - mysqldb
+      - servicems
+
+    networks:
+      springboot-mysql-net:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    restart: on-failure
+
+  config-server-ms:
+    image: radhakant/configms:latest
+    container_name: configms
+
+    ports:
+      - "8888:8888"
+    depends_on:
+      - mysqldb
+      - servicems
+
+    networks:
+      springboot-mysql-net:
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+
+    ports:
+      - "9411:9411"
+    depends_on:
+      - mysqldb
+
+
+    networks:
+      springboot-mysql-net:
+
+
+
+
+
+
+
+
+networks:
+  springboot-mysql-net:

@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: product
+  labels:
+    app: product
+
+spec: 
+  replicas: 1    
+  template: 
+    metadata: 
+      name: product
+      labels:
+        app: product
+    spec:                       # <- The correct place for the 'spec' field
+      containers:
+      - name: product
+        image: radhakant/productms 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
+        env:
+        - name: DB_HOST
+          value: mysqldb 
+        - name: DB_NAME
+          value: ms2 
+        - name: DB_USERNAME 
+          value: root
+        - name: DB_PASSWORD 
+          value: root
+        - name: SPRING_PROFILES_ACTIVE 
+          value: k8s
+      restartPolicy: Always    
+  selector:
+    matchLabels:
+      app: product    
+
+---
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: product
+spec:
+  type: NodePort
+  selector:
+    app: product 
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30002   # Correct capitalization is 'nodePort'
+...

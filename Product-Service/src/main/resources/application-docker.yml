@@ -1,0 +1,71 @@
+server:
+  port: 8080
+client-service:
+  url: http://client:8081
+spring:
+  application:
+    name: PRODUCT-SERVICE
+
+
+
+  datasource:
+    url: jdbc:mysql://mysqldb:3306/ms2
+    username: root
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://service:8761/eureka/
+    registerWithEureka: true
+    fetchRegistry: true
+  instance:
+    preferIpAddress: true
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    configs :
+      default :
+        registerHealthIndicator : true
+    instances:
+      PRODUCT-BREAKERS:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+  retry:
+    instances:
+      EMPLOYEE-BREAKERS:
+        registerHealthIndicator: true
+        maxAttempts: 5
+        waitDuration: 2s

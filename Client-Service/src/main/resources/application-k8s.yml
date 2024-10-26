@@ -1,0 +1,34 @@
+server:
+  port: 8081
+
+spring:
+  cloud:
+    config:
+      enabled: false  # Disable Config Server access
+  application:
+    name: CLIENT-SERVICE
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}/${DB_NAME:ms2}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans

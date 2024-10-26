@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  labels:
+    app: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - name: client
+        image: radhakant/clientms
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: backend-app-config-map
+              key: DB_HOST
+
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: backend-app-config-map
+              key: DB_NAME
+
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: backend-app-secrets
+              key: DB_USERNAME
+
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-app-secrets
+              key: DB_PASSWORD
+        - name: SPRING_PROFILES_ACTIVE   # Adding Spring profile for k8s
+          value: k8s
+
+        
+       
+---
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: client
+spec:
+  type: NodePort
+  selector:
+    app: client 
+  ports:
+  - port: 80
+    targetPort: 8081
+    nodePort: 30001   # Correct capitalization is 'nodePort'
+...

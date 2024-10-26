@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: client
+  labels:
+    app: client
+
+spec: 
+  replicas: 1    
+  template: 
+    metadata: 
+      name: client
+      labels:
+        app: client
+    spec:                       # <- The correct place for the 'spec' field
+      containers:
+      - name: client
+        image: radhakant/clientms 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+
+        env:
+        - name: DB_HOST
+          value: mysqldb 
+        - name: DB_NAME
+          value: ms2 
+        - name: DB_USERNAME 
+          value: root
+        - name: DB_PASSWORD 
+          value: root
+        - name: SPRING_PROFILES_ACTIVE 
+          value: k8s
+      restartPolicy: Always    
+  selector:
+    matchLabels:
+      app: client    
+
+---
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: client
+spec:
+  type: NodePort
+  selector:
+    app: client 
+  ports:
+  - port: 80
+    targetPort: 8081
+    nodePort: 30001   # Correct capitalization is 'nodePort'
+...
